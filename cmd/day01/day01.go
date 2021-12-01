@@ -2,16 +2,35 @@ package main
 
 import (
 	"bufio"
-	"flag"
+	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
+
+	"github.com/spf13/pflag"
 )
 
 func main() {
+	pflag.Usage = func() {
+		fmt.Printf(`Advent of Code 2021 solution: '%s'
+
+Flags:
+`, filepath.Base(os.Args[0]))
+		pflag.PrintDefaults()
+	}
 	var inputPath string
-	flag.StringVar(&inputPath, "input", "input.txt", "Puzzle input")
-	flag.Parse()
+	var part2 bool
+	var showHelp bool
+	pflag.StringVarP(&inputPath, "input", "i", "input.txt", "Puzzle input")
+	pflag.BoolVarP(&part2, "part2", "2", false, "Give part 2 results")
+	pflag.BoolVarP(&showHelp, "help", "h", false, "Show this help text")
+	pflag.Parse()
+
+	if showHelp {
+		pflag.Usage()
+		os.Exit(0)
+	}
 
 	inputFile, err := os.Open(inputPath)
 	if err != nil {
