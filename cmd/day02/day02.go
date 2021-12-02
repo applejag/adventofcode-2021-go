@@ -14,7 +14,12 @@ func main() {
 	defer inputFile.Close()
 
 	scanner := NewCmdScanner(inputFile)
-	var sub submarine
+	var sub Submarine
+	if common.Part2 {
+		sub = &submarine2{}
+	} else {
+		sub = &submarine1{}
+	}
 	var cmdCount int
 	for scanner.Scan() {
 		cmd := scanner.Command()
@@ -29,9 +34,9 @@ func main() {
 	}
 	log.Info().WithInt("cmds", cmdCount).Message("Scanning complete.")
 	log.Info().
-		WithInt("pos", sub.position).
-		WithInt("depth", sub.depth).
-		WithInt("product", sub.position*sub.depth).
+		WithInt("pos", sub.Position()).
+		WithInt("depth", sub.Depth()).
+		WithInt("product", sub.Position()*sub.Depth()).
 		Message("Final submarine position.")
 }
 
@@ -43,12 +48,18 @@ const (
 	CommandUp      Command = "up"
 )
 
-type submarine struct {
+type Submarine interface {
+	Move(Command, int)
+	Depth() int
+	Position() int
+}
+
+type submarine1 struct {
 	depth    int
 	position int
 }
 
-func (s *submarine) Move(cmd Command, arg int) {
+func (s *submarine1) Move(cmd Command, arg int) {
 	switch cmd {
 	case CommandForward:
 		s.position += arg
@@ -59,4 +70,40 @@ func (s *submarine) Move(cmd Command, arg int) {
 	default:
 		log.Warn().WithString("cmd", string(cmd)).Message("Unknown command.")
 	}
+}
+
+func (s *submarine1) Depth() int {
+	return s.depth
+}
+
+func (s *submarine1) Position() int {
+	return s.position
+}
+
+type submarine2 struct {
+	depth    int
+	position int
+	aim      int
+}
+
+func (s *submarine2) Move(cmd Command, arg int) {
+	switch cmd {
+	case CommandForward:
+		s.position += arg
+		s.depth += s.aim * arg
+	case CommandDown:
+		s.aim += arg
+	case CommandUp:
+		s.aim -= arg
+	default:
+		log.Warn().WithString("cmd", string(cmd)).Message("Unknown command.")
+	}
+}
+
+func (s *submarine2) Depth() int {
+	return s.depth
+}
+
+func (s *submarine2) Position() int {
+	return s.position
 }
