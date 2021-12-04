@@ -3,7 +3,6 @@ package main
 import (
 	"bufio"
 	"io"
-	"os"
 	"strconv"
 
 	"github.com/iver-wharf/wharf-core/pkg/logger"
@@ -18,50 +17,11 @@ func main() {
 	inputFile := common.OpenInput()
 	defer inputFile.Close()
 
-	scanner := NewBitScanner(inputFile)
-	var bitSums []int
-	var scansCount int
-	for scanner.Scan() {
-		bits := scanner.Bits()
-		bitCount := scanner.BitCount()
-		scansCount++
-		bitSums = growSliceToLen(bitSums, bitCount)
-
-		for i := 0; i < bitCount; i++ {
-			bitSums[bitCount-i-1] += (bits >> i) & 1
-		}
+	if common.Part2 {
+		part2(inputFile)
+	} else {
+		part1(inputFile)
 	}
-	if err := scanner.Err(); err != nil {
-		log.Error().WithError(err).
-			Message("Failed to scan.")
-		os.Exit(1)
-	}
-
-	log.Info().WithStringf("sums", "%v", bitSums).
-		WithInt("scans", scansCount).
-		Message("Scanning complete.")
-
-	var gamma int
-	halfScansCount := scansCount / 2
-	for i := 0; i < len(bitSums); i++ {
-		gamma <<= 1
-		if bitSums[i] > halfScansCount {
-			gamma++
-		}
-		log.Debug().WithInt("idx", i).
-			WithInt("sum", bitSums[i]).
-			WithStringf("gamma", "%b", gamma).
-			Message("")
-	}
-
-	epsilon := ((1 << len(bitSums)) - 1) & (^gamma)
-
-	log.Info().
-		WithInt("gamma", gamma).
-		WithInt("epsilon", epsilon).
-		WithInt("power", gamma*epsilon).
-		Message("Calculated consumption.")
-
 }
 
 func growSliceToLen(slice []int, min int) []int {
@@ -107,7 +67,7 @@ func (bs *bitScanner) Bits() int {
 	return bs.num
 }
 
-func (bs *bitScanner) BitCount() int {
+func (bs *bitScanner) BitsCount() int {
 	return bs.bitCount
 }
 
