@@ -6,7 +6,6 @@ import (
 	"io"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/iver-wharf/wharf-core/pkg/logger"
 	"github.com/jilleJr/adventofcode-2021-go/internal/common"
@@ -39,24 +38,14 @@ func main() {
 	log.Debug().WithStringer("minmax", minMax).Message("Calculated line usage.")
 	grid := make2D(minMax.x2+1, minMax.y2+1) //+1 because min/max are inclusive
 
-	for _, line := range lines {
-		line.Blit(grid)
-	}
-
-	if common.ShowDebug {
-		var sb strings.Builder
-		for y := minMax.y1; y <= minMax.y2; y++ {
-			for x := minMax.x1; x <= minMax.x2; x++ {
-				val := grid[x][y]
-				if val == 0 {
-					sb.WriteByte('.')
-				} else {
-					sb.WriteString(strconv.Itoa(val))
-				}
-			}
-			sb.WriteByte('\n')
+	if common.Part2 {
+		for _, line := range lines {
+			line.Blit2(grid)
 		}
-		fmt.Println(sb.String())
+	} else {
+		for _, line := range lines {
+			line.Blit1(grid)
+		}
 	}
 
 	var overlaps int
@@ -82,6 +71,12 @@ func make2D(width, height int) [][]int {
 func calcMinMax(lines []Line) Line {
 	minMax := lines[0]
 	for _, line := range lines {
+		if line.x2 < line.x1 {
+			line.x2, line.x1 = line.x1, line.x2
+		}
+		if line.y2 < line.y1 {
+			line.y2, line.y1 = line.y1, line.y2
+		}
 		if line.x1 < minMax.x1 {
 			minMax.x1 = line.x1
 		}
@@ -126,12 +121,6 @@ func (s *lineScanner) Scan() bool {
 	if err != nil {
 		s.err = err
 		return false
-	}
-	if x2 < x1 {
-		x2, x1 = x1, x2
-	}
-	if y2 < y1 {
-		y2, y1 = y1, y2
 	}
 	s.line = Line{x1, y1, x2, y2}
 	log.Debug().
