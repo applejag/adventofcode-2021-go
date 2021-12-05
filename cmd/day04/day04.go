@@ -49,7 +49,45 @@ func main() {
 		WithInt("boards", len(bingoBoards)).
 		Message("Scanning complete.")
 
-	winningBoard, lastNum := callNumbersUntilWinner(bingoBoards, nums)
+	if common.Part2 {
+		part2(bingoBoards, nums)
+	} else {
+		part1(bingoBoards, nums)
+	}
+}
+
+func part1(bingoBoards []Board, nums []int) {
+	winningBoardIdx, lastNumIdx := callNumbersUntilWinner(bingoBoards, []int{}, nums)
+	if winningBoardIdx < 0 {
+		log.Error().Message("No winning board after all numbers were called.")
+		os.Exit(1)
+	}
+
+	sum := bingoBoards[winningBoardIdx].SumUncalledNumbers()
+	log.Info().
+		WithInt("num", nums[lastNumIdx]).
+		WithInt("sum", sum).
+		WithInt("score", sum*nums[lastNumIdx]).
+		Message("Found winning board.")
+}
+
+func part2(bingoBoards []Board, nums []int) {
+	var winningBoard *Board
+	var numIdx int
+	var blackList []int
+	log.Debug().WithInt("boards", len(bingoBoards)).Message("Starting checks.")
+	for numIdx < len(nums) {
+		boardIdx, lastNumIdx := callNumbersUntilWinner(bingoBoards, blackList, nums[numIdx:])
+		if boardIdx < 0 {
+			break
+		}
+		log.Debug().WithInt("boardIdx", boardIdx).
+			WithInt("numIdx", lastNumIdx).
+			Message("Found another win.")
+		numIdx = lastNumIdx + numIdx
+		winningBoard = &bingoBoards[boardIdx]
+		blackList = append(blackList, boardIdx)
+	}
 	if winningBoard == nil {
 		log.Error().Message("No winning board after all numbers were called.")
 		os.Exit(1)
@@ -57,21 +95,33 @@ func main() {
 
 	sum := winningBoard.SumUncalledNumbers()
 	log.Info().
-		WithInt("lastNum", lastNum).
+		WithInt("num", nums[numIdx]).
 		WithInt("sum", sum).
-		WithInt("score", sum*lastNum).
-		Message("Found winning board.")
+		WithInt("score", sum*nums[numIdx]).
+		Message("Found last winning board.")
 }
 
-func callNumbersUntilWinner(boards []Board, nums []int) (winningBoard *Board, lastNum int) {
-	for _, num := range nums {
-		for _, board := range boards {
+func callNumbersUntilWinner(boards []Board, boardBlackList, nums []int) (boardIdx, lastNumIdx int) {
+	for numIdx, num := range nums {
+		for boardIdx, board := range boards {
+			if containsInt(boardBlackList, boardIdx) {
+				continue
+			}
 			if board.CallNumber(num) && board.HasWon() {
-				return &board, num
+				return boardIdx, numIdx
 			}
 		}
 	}
-	return nil, nums[len(nums)-1]
+	return -1, len(nums) - 1
+}
+
+func containsInt(slice []int, value int) bool {
+	for _, element := range slice {
+		if element == value {
+			return true
+		}
+	}
+	return false
 }
 
 func scanNums(scanner *sectionScanner) ([]int, error) {
