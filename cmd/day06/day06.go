@@ -25,31 +25,57 @@ func main() {
 	}
 
 	numsStrs := strings.Split(strings.TrimSpace(string(bytes)), ",")
-	fishAges, err := parseInts(numsStrs)
+	nums, err := parseInts(numsStrs)
 	if err != nil {
 		log.Error().WithError(err).Message("Failed to parse int.")
 		os.Exit(1)
 	}
 
-	log.Info().WithInt("fish", len(fishAges)).
+	log.Info().WithInt("fish", len(nums)).
 		Message("Scanning complete.")
 
-	for day := 0; day < 80; day++ {
-		fishAges = iterateAges(fishAges)
+	var fishCountByAge [9]int64
+	for _, age := range nums {
+		fishCountByAge[age]++
 	}
-	log.Info().WithInt("fish", len(fishAges)).
+
+	limit := 80
+	if common.Part2 {
+		limit = 256
+	}
+
+	for day := 0; day < limit; day++ {
+		log.Debug().
+			WithInt64("0", fishCountByAge[0]).
+			WithInt64("1", fishCountByAge[1]).
+			WithInt64("2", fishCountByAge[2]).
+			WithInt64("3", fishCountByAge[3]).
+			WithInt64("4", fishCountByAge[4]).
+			WithInt64("5", fishCountByAge[5]).
+			WithInt64("6", fishCountByAge[6]).
+			WithInt64("7", fishCountByAge[7]).
+			WithInt64("8", fishCountByAge[8]).
+			Message("Fish count by age.")
+		iterateAges(&fishCountByAge)
+	}
+
+	var sum int64
+	for _, fishCount := range fishCountByAge {
+		sum += fishCount
+	}
+
+	log.Info().WithInt64("fish", sum).
 		Message("Multiplied.")
 }
 
-func iterateAges(fishAges []int) []int {
-	for i, age := range fishAges {
-		if age <= 0 {
-			fishAges = append(fishAges, 8)
-			age = 7
-		}
-		fishAges[i] = age - 1
+func iterateAges(fishCountByAge *[9]int64) {
+	ages0 := fishCountByAge[0]
+	fishCountByAge[0] = fishCountByAge[1]
+	for i := 0; i <= 7; i++ {
+		fishCountByAge[i] = fishCountByAge[i+1]
 	}
-	return fishAges
+	fishCountByAge[6] += ages0
+	fishCountByAge[8] = ages0
 }
 
 func parseInts(s []string) ([]int, error) {
