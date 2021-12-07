@@ -34,11 +34,33 @@ func main() {
 	log.Info().WithInt("crabs", len(positions)).
 		Message("Scanning complete.")
 
-	target := median(positions)
+	med := median(positions)
 	log.Debug().
 		WithInt("median", median(positions)).
 		Message("")
 
+	if common.Part2 {
+		var leastFuel int
+		var leastTarget int
+		for target := med - 400; target < med+400; target++ {
+			fuelSum := calcPart2FuelSumForTarget(positions, target)
+			if leastFuel == 0 || fuelSum < leastFuel {
+				leastFuel = fuelSum
+				leastTarget = target
+			}
+		}
+		log.Info().WithInt("fuel", leastFuel).
+			WithInt("target", leastTarget).
+			Message("Calculated fuel consumption.")
+	} else {
+		fuelSum := calcFuelSumForTarget(positions, med)
+
+		log.Info().WithInt("fuel", fuelSum).
+			Message("Calculated fuel consumption.")
+	}
+}
+
+func calcFuelSumForTarget(positions []int, target int) int {
 	var fuelSum int
 	for _, pos := range positions {
 		delta := target - pos
@@ -47,9 +69,23 @@ func main() {
 		}
 		fuelSum += delta
 	}
+	return fuelSum
+}
 
-	log.Info().WithInt("fuel", fuelSum).
-		Message("Calculated fuel consumption.")
+func calcPart2FuelSumForTarget(positions []int, target int) int {
+	var fuelSum int
+	for _, pos := range positions {
+		delta := target - pos
+		if delta < 0 {
+			delta = -delta
+		}
+		fuelSum += arithProgSum(delta)
+	}
+	return fuelSum
+}
+
+func arithProgSum(n int) int {
+	return n * (n + 1) / 2
 }
 
 func median(nums []int) int {
