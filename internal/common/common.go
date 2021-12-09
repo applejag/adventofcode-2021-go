@@ -47,6 +47,12 @@ func Init() {
 		pflag.Usage()
 		os.Exit(0)
 	}
+
+	part := 1
+	if Part2 {
+		part = 2
+	}
+	log.Debug().WithInt("part", part).Message("Computing:")
 }
 
 func initLogger() {
