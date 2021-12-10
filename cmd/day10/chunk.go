@@ -35,6 +35,21 @@ func (c Chunk) SyntaxErrScore() int {
 	}
 }
 
+func (c Chunk) AutocompleteScore() int {
+	switch c {
+	case Chunk0:
+		return 1
+	case Chunk1:
+		return 2
+	case Chunk2:
+		return 3
+	case Chunk3:
+		return 4
+	default:
+		return 0
+	}
+}
+
 type ChunkRune struct {
 	Chunk
 	open bool
