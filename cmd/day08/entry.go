@@ -5,20 +5,20 @@ import (
 	"strings"
 )
 
-type Segment byte
+type Segments byte
 
 const (
-	SegA Segment = 1 << iota
+	SegA Segments = 1 << iota
 	SegB
 	SegC
 	SegD
 	SegE
 	SegF
 	SegG
-	SegNone Segment = 0
+	SegNone Segments = 0
 )
 
-func (s Segment) String() string {
+func (s Segments) String() string {
 	switch s {
 	case SegA:
 		return "a"
@@ -35,11 +35,18 @@ func (s Segment) String() string {
 	case SegG:
 		return "g"
 	default:
-		return fmt.Sprintf("%T(%d)", s, s)
+		var sb strings.Builder
+		for i := SegA; i <= SegG; i <<= 1 {
+			singleSeg := s & i
+			if singleSeg != SegNone {
+				sb.WriteString(singleSeg.String())
+			}
+		}
+		return sb.String()
 	}
 }
 
-func (s Segment) Count() int {
+func (s Segments) Count() int {
 	var count int
 	for i := SegA; i <= SegG; i <<= 1 {
 		if s&i != 0 {
@@ -49,7 +56,7 @@ func (s Segment) Count() int {
 	return count
 }
 
-func ParseSegment(r rune) (Segment, error) {
+func ParseSegment(r rune) (Segments, error) {
 	switch r {
 	case 'a':
 		return SegA, nil
@@ -66,12 +73,12 @@ func ParseSegment(r rune) (Segment, error) {
 	case 'g':
 		return SegG, nil
 	default:
-		return SegNone, fmt.Errorf("unknown segment: %s", r)
+		return SegNone, fmt.Errorf("unknown segment: %v", r)
 	}
 }
 
-func ParseSegments(s string) (Segment, error) {
-	var segSum Segment
+func ParseSegments(s string) (Segments, error) {
+	var segSum Segments
 	for _, r := range s {
 		seg, err := ParseSegment(r)
 		if err != nil {
@@ -83,8 +90,8 @@ func ParseSegments(s string) (Segment, error) {
 }
 
 type Entry struct {
-	SignalPatterns [10]Segment
-	OutputValue    [4]Segment
+	SignalPatterns [10]Segments
+	OutputValue    [4]Segments
 }
 
 func (e Entry) String() string {
