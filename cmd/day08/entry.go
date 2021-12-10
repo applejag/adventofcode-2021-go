@@ -18,6 +18,19 @@ const (
 	SegNone Segments = 0
 )
 
+const (
+	Seg0 Segments = SegA | SegB | SegC | SegE | SegF | SegG
+	Seg1 Segments = SegC | SegF
+	Seg2 Segments = SegA | SegC | SegD | SegE | SegG
+	Seg3 Segments = SegA | SegC | SegD | SegF | SegG
+	Seg4 Segments = SegB | SegC | SegD | SegF
+	Seg5 Segments = SegA | SegB | SegD | SegF | SegG
+	Seg6 Segments = SegA | SegB | SegD | SegE | SegF | SegG
+	Seg7 Segments = SegA | SegC | SegF
+	Seg8 Segments = SegA | SegB | SegC | SegD | SegE | SegF | SegG
+	Seg9 Segments = SegA | SegB | SegC | SegD | SegF | SegG
+)
+
 func (s Segments) String() string {
 	switch s {
 	case SegA:
@@ -54,6 +67,33 @@ func (s Segments) Count() int {
 		}
 	}
 	return count
+}
+
+func (s Segments) Int() (int, error) {
+	switch s {
+	case Seg0:
+		return 0, nil
+	case Seg1:
+		return 1, nil
+	case Seg2:
+		return 2, nil
+	case Seg3:
+		return 3, nil
+	case Seg4:
+		return 4, nil
+	case Seg5:
+		return 5, nil
+	case Seg6:
+		return 6, nil
+	case Seg7:
+		return 7, nil
+	case Seg8:
+		return 8, nil
+	case Seg9:
+		return 9, nil
+	default:
+		return -1, fmt.Errorf("segments does not represent a digit: %s", s)
+	}
 }
 
 func ParseSegment(r rune) (Segments, error) {
