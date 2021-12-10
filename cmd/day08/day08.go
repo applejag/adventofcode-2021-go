@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"strconv"
 
 	"github.com/iver-wharf/wharf-core/pkg/logger"
 	"github.com/jilleJr/adventofcode-2021-go/internal/common"
@@ -31,10 +30,18 @@ func main() {
 	log.Info().WithInt("entries", len(entries)).
 		Message("Scanning complete.")
 
+	if common.Part2 {
+		part2(entries)
+	} else {
+		part1(entries)
+	}
+}
+
+func part1(entries []Entry) {
 	var uniqueSegDigits int
 	for _, entry := range entries {
 		for _, out := range entry.OutputValue {
-			switch len(out) {
+			switch out.Count() {
 			case 2, 3, 4, 7:
 				uniqueSegDigits++
 			}
@@ -44,7 +51,9 @@ func main() {
 		Message("Counted unique segment-count digits in outputs.")
 }
 
-func parseInt(s string) (int, error) {
-	i, err := strconv.ParseInt(s, 10, 0)
-	return int(i), err
+func part2(entries []Entry) {
+	for _, entry := range entries {
+		log.Debug().WithStringf("entry", "%v", entry).Message("")
+		break
+	}
 }

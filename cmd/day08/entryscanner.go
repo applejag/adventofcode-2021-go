@@ -36,10 +36,16 @@ func (s *entryScanner) Scan() bool {
 	}
 	s.entry = Entry{}
 	for i, d := range sig {
-		s.entry.SignalPatterns[i] = Digit(d)
+		s.entry.SignalPatterns[i], s.err = ParseSegments(d)
+		if s.err != nil {
+			return false
+		}
 	}
 	for i, d := range out {
-		s.entry.OutputValue[i] = Digit(d)
+		s.entry.OutputValue[i], s.err = ParseSegments(d)
+		if s.err != nil {
+			return false
+		}
 	}
 	return true
 }
