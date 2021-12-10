@@ -3,6 +3,7 @@ package main
 import (
 	"io"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -34,8 +35,20 @@ func main() {
 	log.Info().WithStringf("size", "%dx%d", len(h), len(h[0])).
 		Message("Scanning complete.")
 
-	sum := h.SumRiskLevels()
-	log.Info().WithInt("sum", sum).Message("Summed lowest points.")
+	if common.Part2 {
+		sizes := h.GetBasinSizes()
+		sort.Ints(sizes)
+		larger3 := sizes[len(sizes)-3:]
+		log.Debug().WithStringf("sizes", "%v", larger3).Message("Taking 3 largest.")
+		product := 1
+		for _, s := range larger3 {
+			product *= s
+		}
+		log.Info().WithInt("product", product).Message("Multiplied basin sizes.")
+	} else {
+		sum := h.SumRiskLevels()
+		log.Info().WithInt("sum", sum).Message("Summed lowest points.")
+	}
 }
 
 func parseInt(s string) (int, error) {
