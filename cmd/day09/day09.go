@@ -1,11 +1,9 @@
 package main
 
 import (
-	"io"
 	"os"
 	"sort"
 	"strconv"
-	"strings"
 
 	"github.com/iver-wharf/wharf-core/pkg/logger"
 	"github.com/jilleJr/adventofcode-2021-go/internal/common"
@@ -16,15 +14,7 @@ var log = logger.NewScoped("day09")
 func main() {
 	common.Init()
 
-	inputFile := common.OpenInput()
-	defer inputFile.Close()
-
-	inputBytes, err := io.ReadAll(inputFile)
-	if err != nil {
-		log.Error().WithError(err).Message("Failed to read file.")
-		os.Exit(1)
-	}
-	inputLines := strings.Split(strings.TrimSpace(string(inputBytes)), "\n")
+	inputLines := common.ReadInputLines()
 
 	h, err := ParseHeightmap(inputLines)
 	if err != nil {

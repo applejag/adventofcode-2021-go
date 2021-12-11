@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -107,4 +108,22 @@ func OpenInput() *os.File {
 
 	log.Info().WithString("path", InputPath).Message("Reading file.")
 	return inputFile
+}
+
+func ReadInputLines() []string {
+	inputFile := OpenInput()
+	defer inputFile.Close()
+
+	var inputLines []string
+	scanner := bufio.NewScanner(inputFile)
+	for scanner.Scan() {
+		inputLines = append(inputLines, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		log.Error().WithError(err).WithString("path", InputPath).
+			Message("Failed to read input file.")
+		os.Exit(1)
+	}
+
+	return inputLines
 }
