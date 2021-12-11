@@ -5,14 +5,11 @@ import (
 
 	"github.com/iver-wharf/wharf-core/pkg/logger"
 	"github.com/jilleJr/adventofcode-2021-go/internal/common"
-	"github.com/spf13/pflag"
 )
 
 var log = logger.NewScoped("day11")
 
 func main() {
-	iterations := 100
-	pflag.IntVarP(&iterations, "steps", "s", iterations, "number of iteration steps")
 	common.Init()
 
 	inputLines := common.ReadInputLines()
@@ -23,23 +20,42 @@ func main() {
 	}
 
 	w, h := g.Size()
+	squidCount := w * h
 	log.Info().WithStringf("size", "%dx%d", w, h).
 		Message("Scanning complete.")
 
 	log.Debug().Messagef("Grid:\n%s", g)
 
+	totalSteps := 100
+	if common.Part2 {
+		// better than keeping on forever
+		totalSteps = 10000
+	}
+
 	var flashesSum int
-	for step := 0; step < iterations; step++ {
+	for step := 1; step <= totalSteps; step++ {
 		f := g.Iterate()
+
+		if common.Part2 && f == squidCount {
+			log.Info().WithInt("step", step).Message("All squids flashed!")
+			return
+		}
+
 		flashesSum += f
 		log.Debug().WithInt("step", step).
 			WithInt("flashes", f).
 			WithInt("sum", flashesSum).
 			Message("")
-		if step < 10 || step%10 == 9 || step == iterations-1 {
+		if step <= 10 || step%10 == 0 || step == totalSteps {
 			log.Debug().Messagef("Grid:\n%s", g)
 		}
 	}
 
-	log.Info().WithInt("sum", flashesSum).Message("Counted flashes from 100 steps.")
+	if common.Part2 {
+		log.Warn().WithInt("steps", totalSteps).
+			Message("All squids never fired at the same time.")
+	} else {
+		log.Info().WithInt("steps", totalSteps).WithInt("sum", flashesSum).
+			Message("Counted flashes from 100 steps.")
+	}
 }
