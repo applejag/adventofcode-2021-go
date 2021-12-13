@@ -3,23 +3,21 @@ package main
 type Map map[Cave][]Cave
 
 func (m Map) CountPaths() int {
-	return m.countPathsRec(CaveStart, nil, Path{CaveStart})
+	return m.countPathsRec(CaveStart, Path{CaveStart})
 }
 
-func (m Map) countPathsRec(from Cave, blacklist []Cave, pathTaken Path) int {
+func (m Map) countPathsRec(from Cave, pathTaken Path) int {
 	if from == CaveEnd {
 		log.Debug().WithStringer("path", pathTaken).Message("")
 		return 1
-	} else if from == CaveStart || from.IsSmall() {
-		blacklist = append(blacklist, from)
 	}
 	var paths int
 	for _, to := range m[from] {
-		if containsCave(blacklist, to) {
+		if to.IsSmall() && containsCave(pathTaken, to) {
 			continue
 		}
 		//log.Debug().WithStringf("path", "%5s -> %-5s", from, to).Message("")
-		paths += m.countPathsRec(to, blacklist, append(pathTaken, to))
+		paths += m.countPathsRec(to, append(pathTaken, to))
 	}
 	return paths
 }
