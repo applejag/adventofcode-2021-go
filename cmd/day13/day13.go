@@ -53,8 +53,6 @@ func main() {
 			points = foldPaper(points, fold)
 		}
 		log.Info().
-			WithInt("points", len(points)).
-			WithInt("folds", len(folds)).
 			Message(paperString(points))
 	} else {
 		folded := foldPaper(points, folds[0])
