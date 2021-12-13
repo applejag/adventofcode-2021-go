@@ -48,18 +48,23 @@ func main() {
 		WithInt("folds", len(folds)).
 		Message("Scanning complete.")
 
-	debugPrintPaper(points)
-	folded := foldPaper(points, folds[0])
-	debugPrintPaper(folded)
-	log.Info().
-		WithInt("points", len(folded)).
-		Message("Folded once.")
+	if common.Part2 {
+		for _, fold := range folds {
+			points = foldPaper(points, fold)
+		}
+		log.Info().
+			WithInt("points", len(points)).
+			WithInt("folds", len(folds)).
+			Message(paperString(points))
+	} else {
+		folded := foldPaper(points, folds[0])
+		log.Info().
+			WithInt("points", len(folded)).
+			Message("Folded once.")
+	}
 }
 
-func debugPrintPaper(points []Point) {
-	if !common.ShowDebug {
-		return
-	}
+func paperString(points []Point) string {
 	var maxX, maxY int
 	for _, p := range points {
 		if p.x > maxX {
@@ -81,7 +86,7 @@ func debugPrintPaper(points []Point) {
 			}
 		}
 	}
-	log.Debug().Message(sb.String())
+	return sb.String()
 }
 
 func foldPaper(points []Point, fold Fold) []Point {
