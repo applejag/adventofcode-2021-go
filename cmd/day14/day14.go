@@ -39,12 +39,22 @@ func main() {
 		WithInt("rules", len(rules)).
 		Message("Scanning complete.")
 
-	for i := 0; i < 10; i++ {
+	steps := 10
+	if common.Part2 {
+		steps = 40
+	}
+	for i := 1; i <= steps; i++ {
 		template = ApplyRules(template, rules)
 		if len(template) > 90 {
-			log.Debug().WithInt("outputLen", len(template)).Message("Applied rules.")
+			log.Debug().
+				WithInt("step", i).
+				WithInt("outputLen", len(template)).
+				Message("Applied rules.")
 		} else {
-			log.Debug().WithString("output", template).Message("Applied rules.")
+			log.Debug().
+				WithInt("step", i).
+				WithString("output", template).
+				Message("Applied rules.")
 		}
 	}
 
