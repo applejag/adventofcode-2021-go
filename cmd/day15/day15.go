@@ -1,14 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"os"
-	"sort"
 	"strings"
 
 	"github.com/iver-wharf/wharf-core/pkg/logger"
 	"github.com/jilleJr/adventofcode-2021-go/internal/common"
+	"github.com/jilleJr/adventofcode-2021-go/internal/util"
 )
 
 var log = logger.NewScoped("day15")
@@ -29,11 +30,14 @@ func main() {
 	log.Info().WithStringf("size", "%dx%d", w, h).
 		Message("Scanning complete.")
 
-	scored := createScoredGrid(g)
-	//debugPrintGrid(scored)
-	path := findPath(scored, Point{0, 0})
+	path, err := findPathDijkstra(g, Point{w - 1, h - 1}, Point{0, 0})
+	if err != nil {
+		log.Error().WithError(err).Message("Failed to calculate path.")
+		os.Exit(1)
+	}
 	debugPrintPath(g, path)
-	risk := scored.Val(path.Points[0])
+	log.Debug().WithStringf("path", "%v", path).Message("")
+	risk := util.SumInts(g.Vals(path.Points))
 	log.Info().WithInt("risk", risk).Message("Found optimal path")
 }
 
@@ -76,29 +80,6 @@ func debugPrintPath(g Grid, path Path) {
 	fmt.Print(sb.String())
 }
 
-func createScoredGrid(g Grid) Grid {
-	w, h := g.Size()
-	scored := NewGrid(w, h)
-	for x := w - 1; x >= 0; x-- {
-		for y := h - 1; y >= 0; y-- {
-			p := Point{x, y}
-			neighbors := scored.GetNeighbors2SouthEast(p)
-			if len(neighbors) == 0 {
-				scored.Set(p, g.Val(p))
-			} else {
-				neighborVals := scored.Vals(neighbors)
-				sort.Ints(neighborVals)
-				scored.Set(p, g.Val(p)+neighborVals[0])
-			}
-		}
-	}
-	return scored
-}
-
-func findPath(g Grid, p Point) Path {
-	return findPathRec(g, p, Path{})
-}
-
 type Path struct {
 	Points []Point
 	Sum    int
@@ -113,27 +94,56 @@ func (path Path) ContainsPoint(point Point) bool {
 	return false
 }
 
-func findPathRec(g Grid, p Point, path Path) Path {
-	neighbors := g.GetNeighbors2SouthEast(p)
-	if len(neighbors) == 0 {
-		return path
-	}
-	neighborVals := g.Vals(neighbors)
-	sort.Ints(neighborVals)
-	//log.Debug().
-	//	WithStringer("point", p).
-	//	WithStringf("neighbors", "%v", neighborVals).
-	//	Message("")
-	lowestVal := neighborVals[0]
-	var paths []Path
-	for _, n := range neighbors {
-		val := g.Val(n)
-		if val == lowestVal {
-			paths = append(paths, findPathRec(g, n, Path{append(path.Points, n), path.Sum + val}))
+func findPathDijkstra(g Grid, source Point, target Point) (Path, error) {
+	nodes := map[Point]int{}
+	w, h := g.Size()
+	for x := 0; x < w; x++ {
+		for y := 0; y < h; y++ {
+			p := Point{x, y}
+			nodes[p] = math.MaxInt
 		}
 	}
-	sort.Slice(paths, func(i, j int) bool {
-		return paths[i].Sum < paths[j].Sum
-	})
-	return paths[0]
+	nodes[source] = 0
+	prevPoints := map[Point]Point{}
+
+	for len(nodes) > 0 {
+		minPoint := Point{}
+		minNodeDist := math.MaxInt
+		for p, nDist := range nodes {
+			if nDist < minNodeDist {
+				minNodeDist = nDist
+				minPoint = p
+			}
+		}
+
+		delete(nodes, minPoint)
+
+		neighbors := g.GetNeighbors4(minPoint)
+		//log.Debug().
+		//	WithInt("remaining", len(nodes)).
+		//	WithStringf("node", "%v", minPoint).
+		//	WithStringf("neighbors", "%v", neighbors).
+		//	Message("Dijkstra pathing.")
+		for _, neighborPoint := range neighbors {
+			if _, hasPoint := nodes[neighborPoint]; !hasPoint {
+				continue
+			}
+			dist := minNodeDist + g.Val(neighborPoint)
+			if dist < nodes[neighborPoint] {
+				nodes[neighborPoint] = dist
+				prevPoints[neighborPoint] = minPoint
+			}
+		}
+	}
+	p, hasPoint := prevPoints[target]
+	if !hasPoint && target != source {
+		return Path{}, errors.New("target is unreachable")
+	}
+	var path []Point
+	for hasPoint {
+		path = append(path, p)
+		p, hasPoint = prevPoints[p]
+	}
+	score := util.SumInts(g.Vals(path))
+	return Path{path, score}, nil
 }

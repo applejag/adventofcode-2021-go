@@ -3,16 +3,11 @@ package main
 import (
 	"fmt"
 	"strings"
+
+	"github.com/jilleJr/adventofcode-2021-go/internal/util"
 )
 
 type Empty struct{}
-
-func parseDigit(d rune) (int, error) {
-	if d < '0' || d > '9' {
-		return 0, fmt.Errorf("invalid digit: %s", string(d))
-	}
-	return int(d - '0'), nil
-}
 
 type Point struct {
 	x int
@@ -36,7 +31,7 @@ func ParseGrid(strs []string) (Grid, error) {
 	for _, str := range strs {
 		var line []int
 		for _, r := range str {
-			d, err := parseDigit(r)
+			d, err := util.ParseDigitRune(r)
 			if err != nil {
 				return Grid{}, err
 			}
